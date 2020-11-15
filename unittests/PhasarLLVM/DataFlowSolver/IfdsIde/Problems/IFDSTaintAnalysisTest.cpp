@@ -52,6 +52,7 @@ protected:
   void TearDown() override {
     delete IRDB;
     delete TH;
+    delete PT;
     delete ICFG;
     delete TaintProblem;
     delete TSF;

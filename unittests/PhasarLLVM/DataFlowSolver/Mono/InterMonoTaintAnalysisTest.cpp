@@ -53,6 +53,7 @@ protected:
         // std::cout << "V: " << llvmIRToShortString(Value) << '\n';
       }
     }
+    delete PT;
     return Leaks;
   }
 
@@ -77,6 +78,8 @@ protected:
       FoundResults.insert(getMetaDataID(Result));
     }
     EXPECT_EQ(FoundResults, GroundTruth);
+
+    delete PT;
   }
 
   static void compareResults(

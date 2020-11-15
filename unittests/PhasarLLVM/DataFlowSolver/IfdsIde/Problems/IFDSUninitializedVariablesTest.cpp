@@ -49,6 +49,7 @@ protected:
   void TearDown() override {
     delete IRDB;
     delete TH;
+    delete PT;
     delete ICFG;
     delete UninitProblem;
   }
