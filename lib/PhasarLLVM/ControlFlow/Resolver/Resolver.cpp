@@ -79,6 +79,13 @@ Resolver::getNonPureVirtualVFTEntry(const llvm::StructType *T, unsigned Idx,
                                     llvm::ImmutableCallSite CS) {
   if (TH->hasVFTable(T)) {
     const auto *Target = TH->getVFTable(T)->getFunction(Idx);
+
+    if (!Target) {
+      LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), WARNING)
+                    << "Index:" << Idx << " out of range of vtable");
+      return nullptr;
+    }
+
     if (Target->getName() != "__cxa_pure_virtual") {
       return Target;
     }
