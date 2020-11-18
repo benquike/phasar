@@ -27,6 +27,11 @@
 #include "boost/log/support/date_time.hpp"
 // Not useful here but enable all logging macros in files that include Logger.h
 #include "boost/log/sources/record_ostream.hpp"
+#include "boost/log/attributes.hpp"
+#include "boost/log/attributes/scoped_attribute.hpp"
+#include "boost/log/utility/setup.hpp"
+#include "boost/log/utility/setup/common_attributes.hpp"
+
 #include <llvm/Support/Compiler.h> // LLVM_UNLIKELY
 
 #include "llvm/Support/ErrorHandling.h"
@@ -62,9 +67,25 @@ BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(
     computation;                                                               \
   }
 
+// #define LOG_WITH_TAG_IF_ENABLE_BOOL(condition, computation) do {        \
+//     if (LLVM_UNLIKELY(condition)) {                                     \
+//       computation;                                                      \
+//     }                                                                   \
+//   } while (false)
+
 #define LOG_IF_ENABLE(computation)                                             \
   LOG_IF_ENABLE_BOOL(boost::log::core::get()->get_logging_enabled(),           \
                      computation)
+
+#define LOG_WITH_TAG(tag, computation) do {                            \
+    setLoggerTag(tag);                                                 \
+    LOG_IF_ENABLE_BOOL(boost::log::core::get()->get_logging_enabled(), \
+                       computation)                                    \
+      setLoggerTag("");                                                \
+  } while (false)
+
+#define LOG_WITH_FUNCNAME_AS_TAG(computation)   \
+  LOG_WITH_TAG(__func__, computation)
 
 // Register the logger and use it a singleton then, get the logger with:
 // boost::log::sources::severity_logger<SeverityLevel>& lg = lg::get();
@@ -77,6 +98,7 @@ BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(
 BOOST_LOG_ATTRIBUTE_KEYWORD(severity, "Severity", SeverityLevel)
 BOOST_LOG_ATTRIBUTE_KEYWORD(counter, "LineCounter", int)
 BOOST_LOG_ATTRIBUTE_KEYWORD(timestamp, "Timestamp", boost::posix_time::ptime)
+BOOST_LOG_ATTRIBUTE_KEYWORD(tag_attr, "Tag", std::string)
 
 #else
 #define LOG_IF_ENABLE_BOOL(condition, computation) ((void)0)
@@ -110,6 +132,12 @@ bool logFilter(const boost::log::attribute_value_set &AVSet);
  * Set the filter level.
  */
 void setLoggerFilterLevel(SeverityLevel Level);
+
+/**
+ * Set filter tag
+ */
+void setLoggerTag(const std::string &tag);
+void setLoggerFilterTag(const std::string &tag);
 
 /**
  * A formatter function.

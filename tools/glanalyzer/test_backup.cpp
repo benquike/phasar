@@ -114,17 +114,17 @@ int main(int argc, const char **argv) {
 
       string funcName = function->getName().str();
       if (isMangled(funcName)) {
-	funcName = cxxDemangle(funcName);
+        funcName = cxxDemangle(funcName);
       }
       
       if (funcName.find("blink::WebGLRenderingContext") == 0 &&
-	  funcName.find(api_name) != string::npos) {
+          funcName.find(api_name) != string::npos) {
 
-	if (function->isDeclaration()) {
-	  cout << function->getName().str() << " is a declaration" << endl;
-	}
+        if (function->isDeclaration()) {
+          cout << function->getName().str() << " is a declaration" << endl;
+        }
 
-	name2funcs[api_name].push_back(function);
+        name2funcs[api_name].push_back(function);
       }
     }
   }

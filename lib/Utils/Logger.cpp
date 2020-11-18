@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <array>
 #include <exception>
+#include <iostream>
 
 #include "boost/algorithm/string.hpp"
 #include "boost/core/null_deleter.hpp"
@@ -35,6 +36,8 @@ using namespace psr;
 namespace psr {
 
 SeverityLevel LogFilterLevel = DEBUG;
+static string FilterTag("");
+static boost::log::attributes::mutable_constant<std::string> TagAttr("");
 
 std::string toString(const SeverityLevel &Level) {
   switch (Level) {
@@ -60,10 +63,20 @@ std::ostream &operator<<(std::ostream &OS, const SeverityLevel &Level) {
 }
 
 void setLoggerFilterLevel(SeverityLevel Level) { LogFilterLevel = Level; }
+void setLoggerFilterTag(const string &tag) {
+  FilterTag = tag;
+}
+
+void setLoggerTag(const string &tag) {
+  TagAttr.set(tag);
+}
+
 
 bool logFilter(const boost::log::attribute_value_set &Set) {
 #ifdef DYNAMIC_LOG
-  return Set["Severity"].extract<SeverityLevel>() >= LogFilterLevel;
+  cout << "FilterTag:" << FilterTag << ", Tag:" << Set["Tag"].extract<string>() << endl;
+  return Set["Severity"].extract<SeverityLevel>() >= LogFilterLevel &&
+    (FilterTag == "" || Set["Tag"].extract<string>() == FilterTag);
 #else
   return false;
 #endif
@@ -105,7 +118,8 @@ void initializeLogger(bool UseLogger, const string &LogFile) {
       "Timestamp", boost::log::attributes::local_clock{});
   boost::log::core::get()->set_exception_handler(
       boost::log::make_exception_handler<std::exception>(
-          LoggerExceptionHandler()));
+        LoggerExceptionHandler()));
+  lg::get().add_attribute("Tag", TagAttr);
 #endif
 }
 

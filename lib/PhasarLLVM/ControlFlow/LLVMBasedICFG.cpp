@@ -24,6 +24,7 @@
 #include "llvm/IR/Instruction.h"
 #include "llvm/IR/Module.h"
 #include "llvm/Support/ErrorHandling.h"
+#include "llvm/IR/DebugLoc.h"
 
 #include "boost/graph/copy.hpp"
 #include "boost/graph/depth_first_search.hpp"
@@ -193,6 +194,15 @@ void LLVMBasedICFG::constructionWalker(const llvm::Function *F,
                           << "  " << llvmIRToString(CS.getInstruction()));
             // call the resolve routine
             if (LLVMBasedICFG::isVirtualFunctionCall(CS.getInstruction())) {
+              LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+                            << "it is a virtual function in "
+                            << getReceiverType(llvm::ImmutableCallSite(CS.getInstruction()))->getName().str());
+              const llvm::DebugLoc &loc = CS.getInstruction()->getDebugLoc();
+              if (loc) {
+                LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+                            << "Line number : " << loc.getLine());
+              }
+
               PossibleTargets = Resolver.resolveVirtualCall(CS);
             } else {
               PossibleTargets = Resolver.resolveFunctionPointer(CS);

@@ -43,6 +43,11 @@ public:
     return _log_func_name;
   }
 
+
+  auto get_pointsto_info() {
+    return PT;
+  }
+
   FlowFunctionPtrType getNormalFlowFunction(n_t curr, n_t succ) override;
   FlowFunctionPtrType getCallFlowFunction(n_t call_stmt, f_t dest_fun) override;
   FlowFunctionPtrType getRetFlowFunction(n_t call_site, f_t callee_fun,

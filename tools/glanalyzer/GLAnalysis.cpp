@@ -15,35 +15,6 @@ using namespace std;
 
 namespace psr {
 
-  static string get_const_string_val(const llvm::Value *val) {
-
-    llvm::outs() << "0: " << *val << "\n";
-    if (const llvm::ConstantExpr *ge = llvm::dyn_cast<llvm::ConstantExpr>(val)) {
-      llvm::Value *v = ge->getOperand(0);
-      llvm::outs() << "1: " << *v << "\n";
-      if (llvm::GlobalVariable *gv = llvm::dyn_cast<llvm::GlobalVariable>(v)) {
-        if (gv->hasInitializer()) {
-          llvm::Constant *c = gv->getInitializer();
-          llvm::outs() << "2: " << *c << "\n";
-          if (llvm::ConstantDataArray *ca = llvm::dyn_cast<llvm::ConstantDataArray>(c)) {
-            llvm::outs() << ca->getAsString().str() << "\n";
-            return ca->getAsString().str();
-          } else {
-            llvm::outs() << "Not ConstantArray\n";
-          }
-        } else {
-          llvm::outs() << "Not Having Initializer\n";
-        }
-      } else {
-        llvm::outs() << "Not GlobalVariable\n";
-      }
-    } else {
-      llvm::outs() << "Not ConstantExpr\n";
-    }
-
-    return "";
-  }
-
   struct TestFF:FlowFunction<GLAnalysisProblem::d_t> {
     const llvm::Instruction *inst;
     const llvm::Value *v;
@@ -60,6 +31,41 @@ namespace psr {
                                      p(p),
                                      from(from),
                                      close_data_flow(close_data_flow) { }
+
+    string get_const_string_val(const llvm::Value *val) {
+      if (const llvm::ConstantExpr *ge = llvm::dyn_cast<llvm::ConstantExpr>(val)) {
+        llvm::Value *v = ge->getOperand(0);
+        if (llvm::GlobalVariable *gv = llvm::dyn_cast<llvm::GlobalVariable>(v)) {
+          if (gv->hasInitializer()) {
+            llvm::Constant *c = gv->getInitializer();
+            // llvm::outs() << "2: " << *c << "\n";
+            if (llvm::ConstantDataArray *ca = llvm::dyn_cast<llvm::ConstantDataArray>(c)) {
+              // llvm::outs() << ca->getAsString().str() << "\n";
+              return ca->getAsString().str();
+            } else {
+              llvm::outs() << "Not ConstantArray\n";
+            }
+          } else {
+            llvm::outs() << "Not Having Initializer\n";
+          }
+        } else {
+          llvm::outs() << "Not GlobalVariable\n";
+        }
+      } else if (auto li = llvm::dyn_cast<llvm::LoadInst>(val)) {
+        const llvm::Value *v = li->getPointerOperand();
+        llvm::outs()  << *v << "\n";
+
+        if (p != nullptr) {
+          auto pt_info = p->get_pointsto_info();
+          auto possible_sites = pt_info->getPointsToSet(v);
+          for (auto x : *possible_sites) {
+            llvm::outs() << " -- site: " << *x << "\n";
+          }
+        }
+      }
+      return "";
+    }
+
 
     set<GLAnalysisProblem::d_t>
     computeTargets(GLAnalysisProblem::d_t source) override {
@@ -78,14 +84,18 @@ namespace psr {
                 llvm::CallSite cs(ci);
                 if (cs.getInstruction()) {
                   // llvm::outs() << "Arguments size:" << cs.arg_size() << "\n";
-                  for (unsigned i = 0; i < cs.arg_size(); i ++) {
-                    llvm::outs() << "argument " << i <<  ":" << *cs.getArgOperand(i) << "\n";
-                  }
-
+                  // for (unsigned i = 0; i < cs.arg_size(); i ++) {
+                  //   llvm::outs() << "argument " << i <<  ":" << *cs.getArgOperand(i) << "\n";
+                  // }
                   // get const string values
                   // get_const_string_val(cs.getArgOperand(2));
-                  get_const_string_val(cs.getArgOperand(2));
-                  get_const_string_val(cs.getArgOperand(3));
+                  // get_const_string_val(cs.getArgOperand(2));
+                  const string &log_msg = get_const_string_val(cs.getArgOperand(3));
+                  if (log_msg != "") {
+                    llvm::outs() << "LOG MSG:" << log_msg << "\n";
+                  } else {
+                    llvm::outs() << "LOG MSG: EMPTY:" << *inst << "\n";
+                  }
                 }
               }  // if cic
             } // if (inst)
