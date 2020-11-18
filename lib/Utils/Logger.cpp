@@ -74,7 +74,6 @@ void setLoggerTag(const string &tag) {
 
 bool logFilter(const boost::log::attribute_value_set &Set) {
 #ifdef DYNAMIC_LOG
-  cout << "FilterTag:" << FilterTag << ", Tag:" << Set["Tag"].extract<string>() << endl;
   return Set["Severity"].extract<SeverityLevel>() >= LogFilterLevel &&
     (FilterTag == "" || Set["Tag"].extract<string>() == FilterTag);
 #else

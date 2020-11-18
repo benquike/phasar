@@ -1,0 +1,35 @@
+* Inbox
+** TODO Looking into the crash caused by the following function
+DEADLINE: <2020-11-18 Wed>
+*Mangled name*: _ZN5blink25WebGLRenderingContextBase10texImage2DEPNS_16ExecutionContextEjiijjPNS_16HTMLImageElementERNS_14ExceptionStateE
+*DeMangled Name*:
+blink::WebGLRenderingContextBase::texImage2D(blink::ExecutionContext*, unsigned int, int, int, unsigned int, unsigned int, blink::HTMLImageElement*, blink::ExceptionState&)
+
+To reproduce it, after building the test program,
+
+#BEGIN_src sh
+
+mkdir build_test
+cd build_test
+CC=clang-10 CXX=clang++-10 LLVM_DIR=/usr/lib/llvm-10 cmake -DCMAKE_BUILD_TYPE=Debug ..
+make
+
+#+END_src
+
+then run the following command:
+
+#BEGIN_src sh
+
+cd build_test
+./tools/glanalyzer/test_prog -m ../tools/glanalyzer/webgl_all_rendering_code.bc   --api texImage2D
+
+#END_src
+
+
+[[file:~/data/llvm-experiment/phasar/lib/PhasarLLVM/ControlFlow/LLVMBasedICFG.cpp::case (CallGraphAnalysisType::DTA):]]
+** TODO Collecting the log messages of all apis
+
+[[file:~/data/llvm-experiment/phasar/tools/glanalyzer/test.cpp][file:~/data/llvm-experiment/phasar/tools/glanalyzer/test.cpp]]
+** TODO Adding value flow for inter-procedural analysis
+
+[[file:~/data/llvm-experiment/phasar/tools/glanalyzer/test.cpp][file:~/data/llvm-experiment/phasar/tools/glanalyzer/test.cpp]]
