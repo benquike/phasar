@@ -87,6 +87,12 @@ BOOST_LOG_INLINE_GLOBAL_LOGGER_DEFAULT(
 #define LOG_WITH_FUNCNAME_AS_TAG(computation)   \
   LOG_WITH_TAG(__func__, computation)
 
+#define LOG_WITH_FUNCNAME_AS_TAG(computation)   \
+  LOG_WITH_TAG(__func__, computation)
+
+#define LOG_WITH_FILENAME_AS_TAG(computation)   \
+  LOG_WITH_TAG(__FILE__, computation)
+
 // Register the logger and use it a singleton then, get the logger with:
 // boost::log::sources::severity_logger<SeverityLevel>& lg = lg::get();
 

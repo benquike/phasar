@@ -89,6 +89,7 @@ void logFormatter(const boost::log::record_view &View,
      //  <<
      //  View.attribute_values()["Timestamp"].extract<boost::posix_time::ptime>()
      << " - [" << View.attribute_values()["Severity"].extract<SeverityLevel>()
+     << "] - [" << View.attribute_values()["Tag"].extract<string>()
      << "] " << View.attribute_values()["Message"].extract<std::string>();
 #endif
 }

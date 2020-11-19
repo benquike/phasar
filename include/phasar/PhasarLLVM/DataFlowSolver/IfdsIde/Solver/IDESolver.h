@@ -619,7 +619,7 @@ protected:
   virtual void processNormalFlow(const PathEdge<n_t, d_t> edge) {
     PAMM_GET_INSTANCE;
     INC_COUNTER("Process Normal", 1, PAMM_SEVERITY_LEVEL::Full);
-    LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+    LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                   << "Process normal at target: "
                   << IDEProblem.NtoString(edge.getTarget()));
     d_t d1 = edge.factAtSource();
@@ -638,14 +638,14 @@ protected:
       for (d_t d3 : res) {
         EdgeFunctionPtrType g =
             cachedFlowEdgeFunctions.getNormalEdgeFunction(n, d2, fn, d3);
-        LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+        LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                       << "Queried Normal Edge Function: " << g->str());
         EdgeFunctionPtrType fprime = f->composeWith(g);
         if (SolverConfig.emitESG()) {
           intermediateEdgeFunctions[std::make_tuple(n, d2, fn, d3)].push_back(
               g);
         }
-        LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+        LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                           << "Compose: " << g->str() << " * " << f->str()
                           << " = " << fprime->str();
                       BOOST_LOG_SEV(lg::get(), DEBUG) << ' ');
@@ -785,7 +785,7 @@ protected:
   void pathEdgeProcessingTask(const PathEdge<n_t, d_t> edge) {
     PAMM_GET_INSTANCE;
     INC_COUNTER("JumpFn Construction", 1, PAMM_SEVERITY_LEVEL::Full);
-    LOG_IF_ENABLE(
+    LOG_WITH_TAG("IDESolver",
         BOOST_LOG_SEV(lg::get(), DEBUG)
             << "-------------------------------------------- " << PathEdgeCount
             << ". Path Edge --------------------------------------------";
@@ -900,10 +900,10 @@ protected:
   void submitInitialSeeds() {
     PAMM_GET_INSTANCE;
     for (const auto &[StartPoint, Facts] : initialSeeds) {
-      LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+      LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                     << "Start point: " << IDEProblem.NtoString(StartPoint));
       for (const auto &Fact : Facts) {
-        LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+        LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                           << "\tFact: " << IDEProblem.DtoString(Fact);
                       BOOST_LOG_SEV(lg::get(), DEBUG) << ' ');
         if (!IDEProblem.isZeroValue(Fact)) {
@@ -929,7 +929,7 @@ protected:
   virtual void processExit(const PathEdge<n_t, d_t> edge) {
     PAMM_GET_INSTANCE;
     INC_COUNTER("Process Exit", 1, PAMM_SEVERITY_LEVEL::Full);
-    LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+    LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                   << "Process exit at target: "
                   << IDEProblem.NtoString(edge.getTarget()));
     n_t n = edge.getTarget(); // an exit node; line 21...
@@ -978,13 +978,13 @@ protected:
             EdgeFunctionPtrType f4 =
                 cachedFlowEdgeFunctions.getCallEdgeFunction(
                     c, d4, ICF->getFunctionOf(n), d1);
-            LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+            LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                           << "Queried Call Edge Function: " << f4->str());
             // get return edge function
             EdgeFunctionPtrType f5 =
                 cachedFlowEdgeFunctions.getReturnEdgeFunction(
                     c, ICF->getFunctionOf(n), n, d2, retSiteC, d5);
-            LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+            LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                           << "Queried Return Edge Function: " << f5->str());
             if (SolverConfig.emitESG()) {
               for (auto sP : ICF->getStartPointsOf(ICF->getFunctionOf(n))) {
@@ -996,13 +996,13 @@ protected:
             }
             INC_COUNTER("EF Queries", 2, PAMM_SEVERITY_LEVEL::Full);
             // compose call function * function * return function
-            LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+            LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                               << "Compose: " << f5->str() << " * " << f->str()
                               << " * " << f4->str();
                           BOOST_LOG_SEV(lg::get(), DEBUG)
                           << "         (return * function * call)");
             EdgeFunctionPtrType fPrime = f4->composeWith(f)->composeWith(f5);
-            LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+            LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                               << "       = " << fPrime->str();
                           BOOST_LOG_SEV(lg::get(), DEBUG) << ' ');
             // for each jump function coming into the call, propagate to
@@ -1014,7 +1014,7 @@ protected:
                 if (!f3->equal_to(allTop)) {
                   d_t d3 = valAndFunc.first;
                   d_t d5_restoredCtx = restoreContextOnReturnedFact(c, d4, d5);
-                  LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+                  LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                                     << "Compose: " << fPrime->str() << " * "
                                     << f3->str();
                                 BOOST_LOG_SEV(lg::get(), DEBUG) << ' ');
@@ -1051,14 +1051,14 @@ protected:
             EdgeFunctionPtrType f5 =
                 cachedFlowEdgeFunctions.getReturnEdgeFunction(
                     c, ICF->getFunctionOf(n), n, d2, retSiteC, d5);
-            LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+            LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                           << "Queried Return Edge Function: " << f5->str());
             if (SolverConfig.emitESG()) {
               intermediateEdgeFunctions[std::make_tuple(n, d2, retSiteC, d5)]
                   .push_back(f5);
             }
             INC_COUNTER("EF Queries", 1, PAMM_SEVERITY_LEVEL::Full);
-            LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+            LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                               << "Compose: " << f5->str() << " * " << f->str();
                           BOOST_LOG_SEV(lg::get(), DEBUG) << ' ');
             propagteUnbalancedReturnFlow(retSiteC, d5, f->composeWith(f5), c);
@@ -1202,7 +1202,7 @@ protected:
             const EdgeFunctionPtrType &f,
             /* deliberately exposed to clients */ n_t relatedCallSite,
             /* deliberately exposed to clients */ bool isUnbalancedReturn) {
-    LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG) << "Propagate flow";
+    LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG) << "Propagate flow";
                   BOOST_LOG_SEV(lg::get(), DEBUG)
                   << "Source value  : " << IDEProblem.DtoString(sourceVal);
                   BOOST_LOG_SEV(lg::get(), DEBUG)
@@ -1231,7 +1231,7 @@ protected:
     EdgeFunctionPtrType fPrime = jumpFnE->joinWith(f);
     bool newFunction = !(fPrime->equal_to(jumpFnE));
 
-    LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+    LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                       << "Join: " << jumpFnE->str() << " & " << f.get()->str()
                       << (jumpFnE->equal_to(f) ? " (EF's are equal)" : " ");
                   BOOST_LOG_SEV(lg::get(), DEBUG)
@@ -1244,7 +1244,7 @@ protected:
       PathEdgeCount++;
       pathEdgeProcessingTask(edge);
 
-      LOG_IF_ENABLE(if (!IDEProblem.isZeroValue(targetVal)) {
+      LOG_WITH_TAG("IDESolver", if (!IDEProblem.isZeroValue(targetVal)) {
         BOOST_LOG_SEV(lg::get(), DEBUG)
             << "EDGE: <F: " << target->getFunction()->getName().str()
             << ", D: " << IDEProblem.DtoString(sourceVal) << '>';
@@ -1256,7 +1256,7 @@ protected:
         BOOST_LOG_SEV(lg::get(), DEBUG) << ' ';
       });
     } else {
-      LOG_IF_ENABLE(BOOST_LOG_SEV(lg::get(), DEBUG)
+      LOG_WITH_TAG("IDESolver", BOOST_LOG_SEV(lg::get(), DEBUG)
                     << "PROPAGATE: No new function!");
     }
   }
